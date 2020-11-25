@@ -1,20 +1,20 @@
-# Learn CableReady
+# Learn ActionCable
 
 ## Overview
 
 * The script [setup.sh](./setup.sh) serves two purposes:
-    * It generate a demo app showcasing the core features of CableReady.
-    * The source for this scrips shows exactly which steps are used to generate the demo app and are crucial to understanding CableReady.
-
-* For more info, see [related presentation](https://docs.google.com/presentation/d/1TG_zD-RRwlMqvZXzYiUX7okNYcyrfEKOpmtCcHxMsD4/edit?usp=sharing)
+    * The script generate a demo app showcasing the core features of ActionCable.
+    * The source for this script is meant to show the minimal development steps you will need to follow to create a simple app that uses ActionCable.
+    
+* For a bit more info, see [related presentation](https://docs.google.com/presentation/d/1TG_zD-RRwlMqvZXzYiUX7okNYcyrfEKOpmtCcHxMsD4/edit?usp=sharing)
 
 ## Run Demo Code
 
 1. Install and run demo:
 
 ```
-git clone git@github.com:johnreitano/learn-cable-ready.git
-cd learn-cable-ready
+git clone git@github.com:johnreitano/learn-action-cable.git
+cd learn-action-cable
 ./setup.sh
 ```
 
