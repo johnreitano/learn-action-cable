@@ -6,7 +6,7 @@
 
 * The source in [setup.sh](./setup.sh) shows which creation steps and code under `action-cable-demo-code` are crucial to understanding ActionCable.
 
-* See https://docs.google.com/presentation/d/1TG_zD-RRwlMqvZXzYiUX7okNYcyrfEKOpmtCcHxMsD4/edit?usp=sharing for related presentation.
+* For more info, see [related presentation](https://docs.google.com/presentation/d/1TG_zD-RRwlMqvZXzYiUX7okNYcyrfEKOpmtCcHxMsD4/edit?usp=sharing)
 
 ## Run Demo Code
 
