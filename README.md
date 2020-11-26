@@ -3,10 +3,10 @@
 ## Overview
 
 * The script [setup.sh](./setup.sh) serves two purposes:
-    * The script generate a demo app showcasing the core features of ActionCable.
-    * The source for this script is meant to show the minimal development steps you will need to follow to create a simple app that uses ActionCable.
+    * It generates a demo app showcasing the core features of ActionCable.
+    * Its contents show the minimal development steps you will need to follow to create a simple app that uses ActionCable.
     
-* For a bit more info, see [related presentation](https://docs.google.com/presentation/d/1TG_zD-RRwlMqvZXzYiUX7okNYcyrfEKOpmtCcHxMsD4/edit?usp=sharing)
+* For a bit more info, see this [related presentation](https://docs.google.com/presentation/d/1TG_zD-RRwlMqvZXzYiUX7okNYcyrfEKOpmtCcHxMsD4/edit?usp=sharing).
 
 ## Run Demo Code
 
