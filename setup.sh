@@ -7,17 +7,23 @@ brew services restart redis
 rails new action-cable-demo-code --webpack --skip-sprockets
 
 cd action-cable-demo-code
+bundle remove tzinfo-data
+bundle add redis bootstrap
+sed -i'' "s/stylesheet_link_tag/stylesheet_pack_tag/" app/views/layouts/application.html.erb
 
-yarn add --force bootstrap jquery popper.js
+yarn add bootstrap jquery popper.js
 
-sed -i'' "s/gem 'tzinfo-data'/# gem 'tzinfo-data'/" Gemfile
-bundle add cable_ready
-yarn add cable_ready
 sed -i'' 's/adapter: async/adapter: redis\n  url: <%= ENV.fetch\("REDIS_URL"\) { "redis:\/\/localhost:6379\/1" } %>/' config/cable.yml
-sed -i'' "s/# For details.*/root 'pages#home'/" config/routes.rb
 rails g controller pages home --no-stylesheets
+sed -i'' "s/# For details.*/root 'pages#home'/" config/routes.rb
 
-mkdir -p app/javascript/images app/javascript/scss app/javascript/js 
+# generate channel and move it to app/javascript/js/channels/
+rails g channel Room --force
+mkdir -p app/javascript/channels app/javascript/js/channels
+[ "$(ls -A app/javascript/channels/ 2> /dev/null)" ] && mv -f app/javascript/channels/* app/javascript/js/channels/ || echo "no channels to move"
+rmdir app/javascript/channels
+
+mkdir -p app/javascript/images
 cat > app/javascript/images/index.js << DONE
 const images = require.context('../images', true)
 const imagePath = (name) => images(name, true)
@@ -25,19 +31,19 @@ const imagePath = (name) => images(name, true)
 DONE
 
 mkdir -p app/javascript/scss
-cat > app/javascript/scss/global.scss <<DONE
+cat > app/javascript/scss/global.scss <<"DONE"
 @import '~bootstrap/scss/bootstrap';
 
 DONE
 
 mkdir -p app/javascript/js
-cat > app/javascript/js/index.js <<DONE
+cat > app/javascript/js/index.js <<"DONE"
 window.App || (window.App = {});
 require("./channels")
 
 DONE
 
-cat > app/javascript/packs/application.js <<DONE
+cat > app/javascript/packs/application.js <<"DONE"
 require("@rails/ujs").start()
 require("turbolinks").start()
 require("@rails/activestorage").start()
@@ -49,7 +55,7 @@ require("../js")
 
 DONE
 
-cat > config/webpack/environment.js <<DONE
+cat > config/webpack/environment.js <<"DONE"
 const { environment } = require('@rails/webpacker')
 const webpack = require('webpack')
 
@@ -64,52 +70,75 @@ module.exports = environment
 
 DONE
 
-rails g channel Room --force
-# move app/javascript/channels to app/javascript/js/channels
-mkdir -p app/javascript/channels app/javascript/js/channels
-[ "$(ls -A app/javascript/channels/ 2> /dev/null)" ] && mv -f app/javascript/channels/* app/javascript/js/channels/ || echo "no channels to move"
-rmdir app/javascript/channels
-
-cat > app/javascript/js/channels/room_channel.js <<DONE
+cat > app/javascript/js/channels/room_channel.js <<"DONE"
 import consumer from "./consumer"
 
 document.addEventListener('turbolinks:load', () => {
-  console.log("room_channel.js has loaded...")
-
-  let roomId = 1;
-  window.App.subscription = consumer.subscriptions.create({ channel: "RoomChannel", room_id: roomId }, {
+  consumer.subscriptions.create({ channel: "RoomChannel" }, {
     connected() {
-      console.log("connected to room ", roomId)
+      console.log("connected to chat channel")
+      this.senderId = Math.floor(Math.random() * Date.now())
+      let subscription = this
+      $("#message-btn").on("click", function (event) {
+        event.preventDefault();
+        subscription.perform('broadcastMessage', {
+          content: $('#message-box').val(),
+          senderId: subscription.senderId
+        })
+        console.log('client sent message to server')
+        $('#message-box').val('')
+      });
     },
 
     disconnected() {
       console.log("disconnected...")
     },
 
-    received(data) {
-      console.log("received data", data)
+    received(message) {
+      console.log("client received message from server", message)
+      let label = message.senderId == this.senderId ? 'Me' : 'Them'
+      $("#messages-container").append("<div>" + label + ': ' + message.content + "</div>")
     }
+
   });
 })
 
 DONE
 
-cat > app/channels/room_channel.rb <<DONE
+cat > app/channels/room_channel.rb <<"DONE"
 class RoomChannel < ApplicationCable::Channel
   def subscribed
-    puts "subscribed to room #{params[:room_id]}"
-    stream_from "room_channel_#{params[:room_id]}"
+    puts "subscribed to room"
+    stream_from "room_channel"
   end
 
-  def broadcastMessage(data)
-    ActionCable.server.broadcast "room_channel_1", data
+  def broadcastMessage(message)
+    ActionCable.server.broadcast "room_channel", message
   end
 
   def unsubscribed
-    puts "unsubscribed from room #{params[:room_id]}"
+    puts "unsubscribed from room"
     # Any cleanup needed when channel is unsubscribed
   end
 end
+
+DONE
+
+cat > app/views/pages/home.html.erb <<"DONE"
+<h1>My Message App</h1>
+
+<%= form_with(url: '#', local: true) do |form| %>
+ <div class="input-group">
+    <%= form.text_field :content, placeholder: 'Type your message here...', class: 'form-control', id: 'message-box' %>
+    <div class="input-group-append">
+      <%= form.submit 'Add Message', class: 'btn btn-primary', id: 'message-btn' %>
+    </div>
+  </div>
+<% end %>
+
+<br>
+<br>
+<div id="messages-container">
 
 DONE
 
